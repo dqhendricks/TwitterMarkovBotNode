@@ -1,9 +1,12 @@
 const fs = require( 'fs' );
 
+/*
+	this class will deconstruct training text, then use the data to generate random sentences
+*/
 
 class Markov {
 	
-	construct() {
+	constructor() {
 		this.initializeData();
 	}
 	
@@ -16,16 +19,15 @@ class Markov {
 	}
 	
 	trainFromText( text ) {
-		this.initializeData();
-		text = text.toLowerCase();
+		text = text.toLowerCase().replace( /\?|:/g, '.' );
 		const textSentences = text.split( '.' );
 		
 		textSentences.forEach( sentence => {
-			sentence = sentence.replace( /\s+/g, ' ' ).trim();
+			sentence = sentence.replace( /\s+/g, ' ' ).replace( /,|;/g, '' ).trim();
 			const words = sentence.split( ' ' );
 			
 			this.processWordArray( words );
-		}
+		} );
 	}
 	
 	processWordArray( words ) {
@@ -45,15 +47,19 @@ class Markov {
 	generateSentence( characterLimit = 140 ) {
 		var sentence = this.randomProperty( this.data );
 		
-		while ( sentence.length <= characterLimit ) {
-			const segment = this.generateSentenceSegment( sentence );
-			if ( !segment || segment.length + sentence.length + 1 > characterLimit ) {
-				break;
-			} else {
-				sentence = `${ sentence } ${ segment }`;
+		if ( !sentence ) {
+			return '';
+		} else {
+			while ( sentence.length <= characterLimit ) {
+				const segment = this.generateSentenceSegment( sentence );
+				if ( !segment || segment.length + sentence.length + 1 > characterLimit ) {
+					break;
+				} else {
+					sentence = `${ sentence } ${ segment }`;
+				}
 			}
+			return this.formatSentence( sentence );
 		}
-		return `${ this.capitalizeFirstLetter( sentence ) }.`;
 	}
 	
 	generateSentenceSegment( sentence ) {
@@ -66,14 +72,30 @@ class Markov {
 		}
 	}
 	
+	formatSentence( sentence ) {
+		return `${ this.capitalizeFirstLetter( this.removeBadTrailingElements( this.capitalizeIs( sentence ) ) ) }.`;
+	}
+	
 	capitalizeFirstLetter( string ) {
 		return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
 	}
 	
+	removeBadTrailingElements( string ) {
+		return string.replace( / and$| a$| an$| the$| but$| which$/, '' );
+	}
+	
+	capitalizeIs( string ) {
+		return string.replace( /(^|\s)i($|\s)/, '$1I$2' );
+	}
+	
 	randomProperty( object ) {
 		const keys = Object.keys( object );
-		return keys[keys.length * Math.random() << 0];
+		if ( keys.length == 0 ) {
+			return null;
+		} else {
+			return keys[keys.length * Math.random() << 0];
+		}
 	}
 }
 
-export default Markov;
+module.exports = Markov;

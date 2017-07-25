@@ -10,9 +10,7 @@
   "author": "Dustin Hendricks",
   "license": "ISC",
   "dependencies": {
-    
+    "twit": "^2.2.9"
   },
-  "devDependencies": {
-    
-  }
+  "devDependencies": {}
 }

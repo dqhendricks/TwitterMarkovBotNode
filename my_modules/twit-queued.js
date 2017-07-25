@@ -16,8 +16,10 @@ class TwitQueued {
 	}
 	
 	processQueue() {
-		const request = this.queue.shift();
-		this.twit[request.method]( endPoint, parameters, callback ); 
+		if ( this.queue.length > 0 ) {
+			const request = this.queue.shift();
+			this.twit[request.method]( endPoint, parameters, callback );
+		}
 	}
 	
 	get( endPoint, parameters, callback ) {

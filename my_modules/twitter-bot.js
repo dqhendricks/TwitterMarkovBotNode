@@ -19,6 +19,7 @@ class TwitterBot {
 	}
 	
 	beginTweetReactions() {
+		this.processTweetReactions();
 		setTimeout( () => {
 			this.processTweetReactions();
 			setInterval( () => {
@@ -33,7 +34,7 @@ class TwitterBot {
 		startTime.setTime( startTime.getTime() + ( 1 * 24 * 60 * 60 * 1000 ) ); // get tonight's, midnight UTC
 		startTime = startTime.getTime() - new Date().getTime()
 		console.log( startTime / ( 1000 * 60 * 60 ) );
-		return startTime;
+		return startTime + 1;
 	}
 	
 	processTweetReactions() {

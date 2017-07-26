@@ -46,7 +46,7 @@ class TwitterBot {
 			data.statuses.forEach( status => {
 				// favorite
 				if ( status.favorite_count > 1 ) {
-					this.twit.post( 'favorites/create', { id: status.id }, ( err, data, response ) => {
+					this.twit.post( 'favorites/create', { id: status.id_str }, ( err, data, response ) => {
 						console.log( data );
 					} );
 				}
@@ -54,13 +54,13 @@ class TwitterBot {
 				const allowedLength = 140 - 2 - status.user.screen_name.length;
 				this.twit.post( 'statuses/update', {
 					status: `@${ status.user.screen_name } ${ this.markov.generateSentence( allowedLength ) }`,
-					in_reply_to_status_id: status.id
+					in_reply_to_status_id: status.id_str
 				}, ( err, data, response ) => {
 					console.log( data );
 				} );
 				// retweets
 				if ( status.favorite_count > 50 && 'media' in status && status.media[0].type == 'photo' && ( status.text.toLowerCase().includes( 'norse mythology' ) || status.text.toLowerCase().includes( 'norsemythology' ) ) ) {
-					this.twit.post( `statuses/retweet/${ status.id }`, { id: status.id }, ( err, data, response ) => {
+					this.twit.post( `statuses/retweet/${ status.id_str }`, { id: status.id_str }, ( err, data, response ) => {
 						console.log( data );
 					} );
 				}

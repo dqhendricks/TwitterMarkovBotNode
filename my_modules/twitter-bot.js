@@ -94,8 +94,8 @@ class TwitterBot {
 						console.log( data );
 					} );
 				}
-			}
-		}
+			} );
+		} );
 	}
 }
 

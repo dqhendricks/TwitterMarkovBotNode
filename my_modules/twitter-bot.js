@@ -72,7 +72,7 @@ class TwitterBot {
 						console.log( data );
 					} );
 					// retweets
-					if ( status.favorite_count >= 25 && 'media' in status && status.media[0].type == 'photo' && status.text.toLowerCase().includes( 'norse' ) ) ) {
+					if ( status.favorite_count >= 25 && 'media' in status && status.media[0].type == 'photo' && status.text.toLowerCase().includes( 'norse' ) ) {
 						this.twit.post( `statuses/retweet/${ status.id_str }`, { id: status.id_str }, ( err, data, response ) => {
 							console.log( data );
 						} );

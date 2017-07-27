@@ -83,7 +83,11 @@ class TwitterBot {
 	}
 	
 	containsSearchTerm( string ) {
-		return this.searchTerms.includes( string );
+		string = string.toLowerCase();
+		this.searchTerms.forEach( term => {
+			if ( string.includes( term ) ) return true;
+		} );
+		return false;
 	}
 	
 	favoriteTaggedTweets() {

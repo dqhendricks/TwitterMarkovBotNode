@@ -8,6 +8,14 @@ class TwitterBot {
 	constructor( twit, markov ) {
 		this.twit = twit;
 		this.markov = markov;
+		this.searchTerms = [
+			'odin',
+			'loki',
+			'ragnarok',
+			'norse ',
+			'viking ',
+			'valkyrie'
+		];
 	}
 	
 	beginStatusPosts() {
@@ -19,11 +27,11 @@ class TwitterBot {
 	}
 	
 	beginTweetReactions() {
-		this.processTweetReactions();
 		setTimeout( () => {
 			this.processTweetReactions();
 			setInterval( () => {
 				this.processTweetReactions();
+				this.favoriteTaggedTweets();
 			}, 1000 * 60 * 60 * 24 );
 		}, this.millisecondsTillStartTime() );
 	}
@@ -42,30 +50,52 @@ class TwitterBot {
 		const formattedToday = date.toISOString().slice( 0, 10 );
 		date.setTime( date.getTime() - ( 1 * 24 * 60 * 60 * 1000 ) );
 		const formattedYesterday = date.toISOString().slice( 0, 10 );
-		this.twit.get( 'search/tweets', { q: `odin OR loki OR ragnarok OR "norse mythology" OR norsemythology since:${ formattedYesterday } until:${ formattedToday } -filter:retweets`, result_type: 'mixed', lang: 'en', count: 100 }, ( err, data, response ) => {
+		const searchString = this.searchTerms.forEach( term => {
+			return `"${ term }"`;
+		} ).join( ' OR ' );
+		
+		this.twit.get( 'search/tweets', { q: `${ searchString } since:${ formattedYesterday } until:${ formattedToday } -filter:retweets`, result_type: 'mixed', lang: 'en', count: 100 }, ( err, data, response ) => {
 			data.statuses.forEach( status => {
-				// favorite
-				if ( status.favorite_count > 1 ) {
+				if ( !this.containsSearchTerm( status.user.screen_name ) ) { // filter out screen name search matches
+					// favorite
+					if ( status.favorite_count > 1 ) {
+						this.twit.post( 'favorites/create', { id: status.id_str }, ( err, data, response ) => {
+							console.log( data );
+						} );
+					}
+					// reply
+					const allowedLength = 140 - 2 - status.user.screen_name.length;
+					this.twit.post( 'statuses/update', {
+						status: `@${ status.user.screen_name } ${ this.markov.generateSentence( allowedLength ) }`,
+						in_reply_to_status_id: status.id_str
+					}, ( err, data, response ) => {
+						console.log( data );
+					} );
+					// retweets
+					if ( status.favorite_count >= 25 && 'media' in status && status.media[0].type == 'photo' && status.text.toLowerCase().includes( 'norse' ) ) ) {
+						this.twit.post( `statuses/retweet/${ status.id_str }`, { id: status.id_str }, ( err, data, response ) => {
+							console.log( data );
+						} );
+					}
+				}
+			} );
+		} );
+	}
+	
+	containsSearchTerm( string ) {
+		return this.searchTerms.includes( string );
+	}
+	
+	favoriteTaggedTweets() {
+		this.twit.get( 'search/tweets', { q: `@trialbyviking`, result_type: 'recent', count: 100 }, ( err, data, response ) => {
+			data.statuses.forEach( status => {
+				if ( status.favorited == 'false' ) {
 					this.twit.post( 'favorites/create', { id: status.id_str }, ( err, data, response ) => {
 						console.log( data );
 					} );
 				}
-				// reply
-				const allowedLength = 140 - 2 - status.user.screen_name.length;
-				this.twit.post( 'statuses/update', {
-					status: `@${ status.user.screen_name } ${ this.markov.generateSentence( allowedLength ) }`,
-					in_reply_to_status_id: status.id_str
-				}, ( err, data, response ) => {
-					console.log( data );
-				} );
-				// retweets
-				if ( status.favorite_count > 50 && 'media' in status && status.media[0].type == 'photo' && ( status.text.toLowerCase().includes( 'norse mythology' ) || status.text.toLowerCase().includes( 'norsemythology' ) ) ) {
-					this.twit.post( `statuses/retweet/${ status.id_str }`, { id: status.id_str }, ( err, data, response ) => {
-						console.log( data );
-					} );
-				}
-			} );
-		} );
+			}
+		}
 	}
 }
 

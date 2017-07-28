@@ -23,7 +23,7 @@ class Markov {
 		const textSentences = text.split( '.' );
 		
 		textSentences.forEach( sentence => {
-			sentence = sentence.replace( /\s+/g, ' ' ).replace( /,|;/g, '' ).trim();
+			sentence = sentence.replace( /\s+/g, ' ' ).replace( /,|;|"/g, '' ).trim();
 			const words = sentence.split( ' ' );
 			
 			this.processWordArray( words );

@@ -27,6 +27,7 @@ class TwitterBot {
 	}
 	
 	beginTweetReactions() {
+		this.processTweetReactions();
 		setTimeout( () => {
 			this.processTweetReactions();
 			setInterval( () => {
@@ -50,7 +51,7 @@ class TwitterBot {
 		const formattedToday = date.toISOString().slice( 0, 10 );
 		date.setTime( date.getTime() - ( 1 * 24 * 60 * 60 * 1000 ) );
 		const formattedYesterday = date.toISOString().slice( 0, 10 );
-		const searchString = this.searchTerms.forEach( term => {
+		const searchString = this.searchTerms.map( term => {
 			return `"${ term }"`;
 		} ).join( ' OR ' );
 		
